@@ -6,24 +6,68 @@
             [seesaw.chooser :as schooser]
             [incanter.core :as icore]
             [incanter.charts :as icharts])
-  (:import [org.jfree.chart ChartPanel]))
+  (:import [org.jfree.chart ChartPanel]
+           org.pushingpixels.substance.api.SubstanceLookAndFeel))
 
 (defn exit[e] (System/exit 0))
 
+(defn addTab [panel tab]
+  (score/config! panel :tabs (conj (:tabs panel) tab)))
+
+(defn display [frame content]
+  (score/config! frame :content content)
+  content)
+
 (defn makePlotPanel[plotData]
-  (def accelPlot 
+
+  (def tabbedGraphs (score/tabbed-panel
+                      :placement :top
+                      :overflow :wrap))
+  (def accel
     (icharts/xy-plot :time :y_accel
                      :x-label "Time (s)"
-                     :y-label "G's"
-                     :title "Active Antiroll Data"
+                     :y-label "Acceleration (g)"
+                     :title "Active Antiroll Acceleration"
                      :legend true
                      :series-label "y"
                      :data plotData))
-  (icharts/add-lines accelPlot :time :x_accel
+  (icharts/add-lines accel :time :x_accel
                      :data plotData
                      :series-label "x")
-  (def accelPlot (ChartPanel. accelPlot))
-  accelPlot)
+  (def gyro
+    (icharts/xy-plot :time :z_gyro
+                     :x-label "Time (s)"
+                     :y-label "Roll? (Degrees?)"
+                     :title "Active Antiroll Roll"
+                     :legend true
+                     :series-label "z"
+                     :data plotData))
+  (def speed
+    (icharts/xy-plot :time :fl_speed
+                     :x-label "Time (s)"
+                     :y-label "Speed (stuffz)"
+                     :title "Active Antiroll Wheel Speeds"
+                     :legend true
+                     :series-label "Front Left"
+                     :data plotData))
+  (icharts/add-lines speed :time :fr_speed
+                     :data plotData
+                     :series-label "Front Right")
+  (icharts/add-lines speed :time :rl_speed
+                     :data plotData
+                     :series-label "Rear Left")
+  (icharts/add-lines speed :time :rr_speed
+                     :data plotData
+                     :series-label "Rear Right")
+  (def accelPlot (ChartPanel. accel))
+  (def gyroPlot (ChartPanel. gyro))
+  (def speedPlot (ChartPanel. speed))
+
+  (addTab tabbedGraphs {:title "Acceleration" :content accelPlot})
+  (addTab tabbedGraphs {:title "Gyro" :content gyroPlot})
+  (addTab tabbedGraphs {:title "Wheel Speed" :content speedPlot})
+
+  tabbedGraphs)
 
 (defn openLogDialog[]
   (def logFile
@@ -36,19 +80,18 @@
 (defn guiInit[]
   (score/native!)
 
+  (javax.swing.UIManager/setLookAndFeel "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
+
   (def mainFrame
     (score/frame 
       :title "Active Antiroll Utils"))
 
-  (defn display [content]
-    (score/config! mainFrame :content content)
-    content)
 
   ;Components...
   (def logButton (score/button :text "Choose log file"))
 
   (def introArea (score/flow-panel
-                     :align :left
+                     :align :center
                      :hgap 20
                      :items [logButton]))
 
@@ -64,7 +107,7 @@
                  (score/scrollable plotArea)
                  :divider-location 1/4))
 
-    (display split))
+    (display mainFrame split))
 
   ;Event bindings...
   (score/listen logButton :action reloadPanel)
@@ -86,6 +129,6 @@
 
   (score/config! mainFrame :menubar topMenubar)
 
-  (display introArea)
+  (display mainFrame introArea)
 
   (-> mainFrame score/pack! score/show!))

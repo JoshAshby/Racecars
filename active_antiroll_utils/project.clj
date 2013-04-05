@@ -7,7 +7,8 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [incanter "1.4.1"]
                  [seesaw "1.4.3"]
-                 [org.jfree/jfreechart "1.0.14"]]
+                 [org.jfree/jfreechart "1.0.14"]
+                 [com.github.insubstantial/substance "7.1"]]
   :plugins [[lein-bin "0.3.2"]]
   :main active-antiroll-utils.core
   :aot [active-antiroll-utils.core])
