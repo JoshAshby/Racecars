@@ -23,75 +23,71 @@
 
 ;GraphTabPanel
 (defn makePlotPanel[plotData]
-  (def tabbedGraphs (score/tabbed-panel
-                      :placement :top
-                      :overflow :wrap))
-  (def accel
-    (icharts/xy-plot :x-label "Time (s)"
-                     :y-label "Acceleration (g)"
-                     :title "Active Antiroll Acceleration"
-                     :legend true))
-  (icharts/add-lines accel :time :yAccel
-                     :data plotData
-                     :series-label "y")
-  (icharts/add-lines accel :time :xAccel
-                     :data plotData
-                     :series-label "x")
+  (let [tabbedGraphs (score/tabbed-panel
+                       :placement :top
+                       :overflow :wrap)
+        accel (icharts/xy-plot :x-label "Time (s)"
+                               :y-label "Acceleration (g)"
+                               :title "Active Antiroll Acceleration"
+                               :legend true)
+        gyro (icharts/xy-plot  :x-label "Time (s)"
+                               :y-label "Roll (Degrees)"
+                               :title "Active Antiroll Roll"
+                               :legend true)
+        speed (icharts/xy-plot :x-label "Time (s)"
+                               :y-label "Speed (rad/sec)"
+                               :title "Active Antiroll Wheel Speeds"
+                               :legend true)]
 
-  (def gyro
-    (icharts/xy-plot :x-label "Time (s)"
-                     :y-label "Roll (Degrees)"
-                     :title "Active Antiroll Roll"
-                     :legend true))
-  (icharts/add-lines gyro :time :zGyro
-                     :data plotData
-                     :series-label "z")
+    (fn [] (icharts/add-lines accel :time :yAccelCorrected
+                         :data plotData
+                         :series-label "y")
+            (icharts/add-lines accel :time :xAccelCorrected
+                               :data plotData
+                               :series-label "x")
+            (icharts/add-lines gyro :time :zGyro
+                               :data plotData
+                               :series-label "z")
+            (icharts/add-lines speed :time :frontLeftSpeedCorrected
+                               :data plotData
+                               :series-label "Front Left")
+            (icharts/add-lines speed :time :frontRightSpeedCorrected
+                               :data plotData
+                               :series-label "Front Right")
+            (icharts/add-lines speed :time :rearLeftSpeedCorrected
+                               :data plotData
+                               :series-label "Rear Left")
+            (icharts/add-lines speed :time :rearRightSpeedCorrected
+                               :data plotData
+                               :series-label "Rear Right")
 
-  (def speed
-    (icharts/xy-plot :x-label "Time (s)"
-                     :y-label "Speed (rad/sec)"
-                     :title "Active Antiroll Wheel Speeds"
-                     :legend true))
-  (icharts/add-lines speed :time :frontLeftSpeed
-                     :data plotData
-                     :series-label "Front Left")
-  (icharts/add-lines speed :time :frontRightSpeed
-                     :data plotData
-                     :series-label "Front Right")
-  (icharts/add-lines speed :time :rearLeftSpeed
-                     :data plotData
-                     :series-label "Rear Left")
-  (icharts/add-lines speed :time :rearRightpeed
-                     :data plotData
-                     :series-label "Rear Right")
+            (def plot (.getPlot accel))
+            (.setTickUnit
+              (.getDomainAxis plot)
+              (org.jfree.chart.axis.NumberTickUnit. 10.0))
+            (.setTickUnit
+              (.getRangeAxis plot) 
+              (org.jfree.chart.axis.NumberTickUnit. 1.0))
 
-  ;(def plot (.getPlot accel))
-  ;(.setTickUnit
-    ;(.getDomainAxis plot)
-    ;(org.jfree.chart.axis.NumberTickUnit. 100.0))
-  ;(.setTickUnit
-    ;(.getRangeAxis plot) 
-    ;(org.jfree.chart.axis.NumberTickUnit. 1.0))
+            (def accelPlot (ChartPanel. accel))
+            (def gyroPlot (ChartPanel. gyro))
+            (def speedPlot (ChartPanel. speed))
 
-  (def accelPlot (ChartPanel. accel))
-  (def gyroPlot (ChartPanel. gyro))
-  (def speedPlot (ChartPanel. speed))
+            (addTab tabbedGraphs {:title "Acceleration" :content accelPlot})
+            (addTab tabbedGraphs {:title "Gyro" :content gyroPlot})
+            (addTab tabbedGraphs {:title "Wheel Speed" :content speedPlot})
 
-  (addTab tabbedGraphs {:title "Acceleration" :content accelPlot})
-  (addTab tabbedGraphs {:title "Gyro" :content gyroPlot})
-  (addTab tabbedGraphs {:title "Wheel Speed" :content speedPlot})
-
-  tabbedGraphs)
+            tabbedGraphs)))
 
 
 ;Dialogs
 (defn openLogDialog[]
-  (def logFile
-    (schooser/choose-file :type :open
-                          :selection-mode :files-only
-                          :filters [["CSV" ["csv"]]]
-                          :success-fn (fn [fc file] (.getAbsolutePath file))))
-  (processData (readCSV logFile)))
+  (let [logFile (schooser/choose-file :type :open
+                                      :selection-mode :files-only
+                                      :filters [["CSV" ["csv"]]]
+                                      :success-fn (fn [fc file]
+                                                    (.getAbsolutePath file)))]
+  (processData (readCSV logFile))))
 
 
 ;Components...
@@ -105,17 +101,17 @@
 
 ;Containers...
 (defn graphSidebarSplit[]
-  (def plotArea (makePlotPanel (openLogDialog)))
-  (def sidebarArea (score/flow-panel
-                     :align :left
-                     :hgap 20
-                     :items [logButton]))
+  (let [plotArea (makePlotPanel (openLogDialog))
+        sidebarArea (score/flow-panel
+                      :align :left
+                      :hgap 20
+                      :items [logButton])
 
-  (def split (score/left-right-split
-               (score/scrollable sidebarArea)
-               (score/scrollable plotArea)
-               :divider-location 2/5))
-  split)
+        split (score/left-right-split 
+                (score/scrollable sidebarArea)
+                (score/scrollable plotArea)
+                :divider-location 2/5)]
+    split))
 
 
 ;Menu items...
@@ -133,16 +129,17 @@
 (def menuBar (score/menubar :items [fileMenu]))
 
 
+;Main frame which is used for the application
+(def mainFrame
+  (score/frame 
+    :title "Active Antiroll Utils"))
+
+
 (defn guiInit[]
   ;GUI Initialization stuff, make it work on all platforms and look nice
   (score/native!)
 
 ;  (javax.swing.UIManager/setLookAndFeel "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
-
-  ;Main frame which is used for the application
-  (def mainFrame
-    (score/frame 
-      :title "Active Antiroll Utils"))
 
   ;component actions
   (defn loadPanelAction[e]

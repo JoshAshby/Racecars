@@ -7,30 +7,37 @@
   (iio/read-dataset datafileName :header true))
 
 (defn processData[dataset]
-  (let [names [:time
-               :xAccel
-               :yAccel
-;               :zAccel
-;               :xGyro
-;               :yGyro
-               :zGyro
+  (let [names [:timems
+               :xaccel
+               :yaccel
+               :zgyro
                :frontRightSpeed
                :frontLeftSpeed
                :rearRightSpeed
-               :rearLeftSpeed]
-        leftOutCols [:time
-                     :xaccel
-                     :yaccel]
- ;                    :zaccel]
+               :rearLeftSpeed
+               :frontRightServo
+               :frontLeftServo
+               :rearServo
+               :times
+               :xAccelCorrected
+               :yAccelCorrected
+               :frontRightSpeedCorrected
+               :frontLeftSpeedCorrected
+               :rearRightSpeedCorrected
+               :rearLeftSpeedCorrected]
         newTime (icore/$map (fn [x] (/ x 10000)) :time dataset)
         newXAccel (icore/$map (fn [x] (/ x 4096)) :xaccel dataset)
         newYAccel (icore/$map (fn [x] (/ x 4096)) :yaccel dataset)
- ;       newZAccel (if (icore/sel dataset :cols :z_accel :rows 0)
- ;                   (icore/$map (fn [x] (/ x 4096)) :z_accel dataset))
-        data (icore/conj-cols newTime
+        newFrontRS (icore/$map (fn [x] (/ x 1)) :frontRightSpeed dataset)
+        newFrontLS (icore/$map (fn [x] (/ x 1)) :frontLeftSpeed dataset)
+        newRearRS (icore/$map (fn [x] (/ x 1)) :rearRightSpeed dataset)
+        newRearLS (icore/$map (fn [x] (/ x 1)) :rearLeftSpeed dataset)
+        data (icore/conj-cols (icore/sel dataset)
+                              newTime
                               newXAccel
                               newYAccel
-;                              newZAccel
-                              (icore/sel dataset
-                                         :except leftOutCols))]
+                              newFrontRS
+                              newFrontLS
+                              newRearRS
+                              newRearLS)]
     (icore/col-names data names)))
