@@ -9,7 +9,8 @@
   (:import [org.jfree.chart ChartPanel]
            org.pushingpixels.substance.api.SubstanceLookAndFeel))
 
-;Utils
+
+;Util functions
 (defn exit[e] (System/exit 0))
 
 (defn addTab [panel tab]
@@ -22,7 +23,6 @@
 
 ;GraphTabPanel
 (defn makePlotPanel[plotData]
-
   (def tabbedGraphs (score/tabbed-panel
                       :placement :top
                       :overflow :wrap))
@@ -31,10 +31,10 @@
                      :y-label "Acceleration (g)"
                      :title "Active Antiroll Acceleration"
                      :legend true))
-  (icharts/add-lines accel :time :y_accel
+  (icharts/add-lines accel :time :yAccel
                      :data plotData
                      :series-label "y")
-  (icharts/add-lines accel :time :x_accel
+  (icharts/add-lines accel :time :xAccel
                      :data plotData
                      :series-label "x")
 
@@ -43,25 +43,25 @@
                      :y-label "Roll (Degrees)"
                      :title "Active Antiroll Roll"
                      :legend true))
-  (icharts/add-lines gyro :time :z_gyro
+  (icharts/add-lines gyro :time :zGyro
                      :data plotData
                      :series-label "z")
 
   (def speed
     (icharts/xy-plot :x-label "Time (s)"
-                     :y-label "Speed (stuffz)"
+                     :y-label "Speed (rad/sec)"
                      :title "Active Antiroll Wheel Speeds"
                      :legend true))
-  (icharts/add-lines speed :time :fl_speed
+  (icharts/add-lines speed :time :frontLeftSpeed
                      :data plotData
                      :series-label "Front Left")
-  (icharts/add-lines speed :time :fr_speed
+  (icharts/add-lines speed :time :frontRightSpeed
                      :data plotData
                      :series-label "Front Right")
-  (icharts/add-lines speed :time :rl_speed
+  (icharts/add-lines speed :time :rearLeftSpeed
                      :data plotData
                      :series-label "Rear Left")
-  (icharts/add-lines speed :time :rr_speed
+  (icharts/add-lines speed :time :rearRightpeed
                      :data plotData
                      :series-label "Rear Right")
 
@@ -91,7 +91,7 @@
                           :selection-mode :files-only
                           :filters [["CSV" ["csv"]]]
                           :success-fn (fn [fc file] (.getAbsolutePath file))))
-  (readCSV logFile))
+  (processData (readCSV logFile)))
 
 
 ;Components...

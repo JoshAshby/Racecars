@@ -1,4 +1,4 @@
-time,x_accel,y_accel,z_gyro,fl_speed,fr_speed,rl_speed,rr_speed,sally
+time,xaccel,yaccel,zgyro,flspeed,frspeed,rlspeed,rrspeed,sally
 32710,3481,-4936,-340,0.0,0.0,0.0,0.0,1103
 32735,3488,-4920,-344,0.0,0.0,0.0,0.0,1103
 32757,3494,-4923,-340,0.0,0.0,0.0,0.0,1103
