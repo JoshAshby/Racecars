@@ -48,9 +48,9 @@ void Log::open() {
       Serial.println("Logging to log.csv...");
     #endif
     #if full
-      logFile.println("time,xAccel,yAccel,zAccel,temp,xGyro,yGyro,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftEpeed,frontRightServo,frontLeftServo,rearServo,message");
+      logFile.println("timems,xAccel,yAccel,zAccel,temp,xGyro,yGyro,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo,message");
     #else
-      logFile.println("time,xAccel,yAccel,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftEpeed,frontRightServo,frontLeftServo,rearServo");
+      logFile.println("timems,xAccel,yAccel,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo");
     #endif
   }
 }
@@ -60,26 +60,34 @@ void Log::close() {
   logFile.close();
 }
 
+void Log::beginLog() {
+  unsigned long time = millis();
+  logFile.print(time);
+  logFile.print(",");
+
+  #if debug
+    Serial.print(time);
+    Serial.print(",");
+  #endif
+}
+
+void Log::error(String message) {
+  logFile.println("**Begin Error:: " + message + " ::End Error**");
+
+  #if debug
+    Serial.println("**Begin Error:: " + message + " ::End Error **");
+  #endif
+}
+
+void Log::log(String message) {
+  logFile.println(message);
+
+  #if debug
+    Serial.println(message);
+  #endif
+}
+
 #if full
-  void Log::log(String message) {
-    logFile.println("**Begin Error:: " + message + " ::End Error**");
-
-    #if debug
-      Serial.println("**Begin Error:: " + message + " ::End Error **");
-    #endif
-  }
-
-  void Log::beginLog() {
-    unsigned long time = millis();
-    logFile.print(time);
-    logFile.print(",");
-
-    #if debug
-      Serial.print(time);
-      Serial.print(",");
-    #endif
-  }
-
   void Log::log(String message, int *aAndGBuffer) {
     logAccel((int *)&aAndGBuffer);
     logFile.println(message);
@@ -112,17 +120,6 @@ void Log::close() {
     #endif
   }
 #else
-  void Log::beginLog() {
-    unsigned long time = millis();
-    logFile.print(time);
-    logFile.print(",");
-
-    #if debug
-      Serial.print(time);
-      Serial.print(",");
-    #endif
-  }
-
   void Log::log(int *aAndGBuffer) {
     logAccel((int *)&aAndGBuffer);
     logFile.println();

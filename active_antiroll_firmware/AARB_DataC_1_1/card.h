@@ -39,8 +39,9 @@ class Log {
     void begin(void);
     void open(void);
     void close(void);
+    void error(String message);
+    void log(String message);
     #if full
-      void log(String message);
       void log(String message, int *aAndGBuffer);
       void log(String message, int *aAndGBuffer, float *wSpeedsBuffer);
       void log(String message, int *aAndGBuffer, float *wSpeedsBuffer, int *pulseBuffer);
