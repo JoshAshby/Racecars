@@ -500,5 +500,5 @@ void loop() {
   }
   */
   servoWrite((int *)&servos);
-  Logger.log("Normal", (int *)&accel_t_gyro, (float *)&wheelSpeeds, (int *)&servos);
+  Logger.log((int *)&accel_t_gyro, (float *)&wheelSpeeds, (int *)&servos);
 }

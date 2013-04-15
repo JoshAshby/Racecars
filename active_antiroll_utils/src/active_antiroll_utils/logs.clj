@@ -8,9 +8,9 @@
 
 (defn processData[dataset]
   (let [names [:timems
-               :xaccel
-               :yaccel
-               :zgyro
+               :xAccel
+               :yAccel
+               :zGyro
                :frontRightSpeed
                :frontLeftSpeed
                :rearRightSpeed
@@ -25,14 +25,14 @@
                :frontLeftSpeedCorrected
                :rearRightSpeedCorrected
                :rearLeftSpeedCorrected]
-        newTime (icore/$map (fn [x] (/ x 10000)) :time dataset)
-        newXAccel (icore/$map (fn [x] (/ x 4096)) :xaccel dataset)
-        newYAccel (icore/$map (fn [x] (/ x 4096)) :yaccel dataset)
+        newTime (icore/$map (fn [x] (/ x 10000)) :timems dataset)
+        newXAccel (icore/$map (fn [x] (/ x 4096)) :xAccel dataset)
+        newYAccel (icore/$map (fn [x] (/ x 4096)) :yAccel dataset)
         newFrontRS (icore/$map (fn [x] (/ x 1)) :frontRightSpeed dataset)
         newFrontLS (icore/$map (fn [x] (/ x 1)) :frontLeftSpeed dataset)
         newRearRS (icore/$map (fn [x] (/ x 1)) :rearRightSpeed dataset)
         newRearLS (icore/$map (fn [x] (/ x 1)) :rearLeftSpeed dataset)
-        data (icore/conj-cols (icore/sel dataset)
+        data (icore/conj-cols dataset
                               newTime
                               newXAccel
                               newYAccel

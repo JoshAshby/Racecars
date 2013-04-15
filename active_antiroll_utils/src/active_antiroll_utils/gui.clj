@@ -23,95 +23,101 @@
 
 ;GraphTabPanel
 (defn makePlotPanel[plotData]
-  (let [tabbedGraphs (score/tabbed-panel
-                       :placement :top
-                       :overflow :wrap)
-        accel (icharts/xy-plot :x-label "Time (s)"
-                               :y-label "Acceleration (g)"
-                               :title "Active Antiroll Acceleration"
-                               :legend true)
-        gyro (icharts/xy-plot  :x-label "Time (s)"
-                               :y-label "Roll (Degrees)"
-                               :title "Active Antiroll Roll"
-                               :legend true)
-        speed (icharts/xy-plot :x-label "Time (s)"
-                               :y-label "Speed (rad/sec)"
-                               :title "Active Antiroll Wheel Speeds"
-                               :legend true)]
+  (def tabbedGraphsPanel (score/tabbed-panel :placement :top
+                                             :overflow :wrap))
 
-    (fn [] (icharts/add-lines accel :time :yAccelCorrected
-                         :data plotData
-                         :series-label "y")
-            (icharts/add-lines accel :time :xAccelCorrected
-                               :data plotData
-                               :series-label "x")
-            (icharts/add-lines gyro :time :zGyro
-                               :data plotData
-                               :series-label "z")
-            (icharts/add-lines speed :time :frontLeftSpeedCorrected
-                               :data plotData
-                               :series-label "Front Left")
-            (icharts/add-lines speed :time :frontRightSpeedCorrected
-                               :data plotData
-                               :series-label "Front Right")
-            (icharts/add-lines speed :time :rearLeftSpeedCorrected
-                               :data plotData
-                               :series-label "Rear Left")
-            (icharts/add-lines speed :time :rearRightSpeedCorrected
-                               :data plotData
-                               :series-label "Rear Right")
+  (def accelPlot (icharts/xy-plot :x-label "Time (s)"
+                                  :y-label "Acceleration (g)"
+                                  :title "Active Antiroll Acceleration"
+                                  :legend true
+                                  :times :xAccelCorrected
+                                  :data plotData
+                                  :series-label "x"))
 
-            (def plot (.getPlot accel))
-            (.setTickUnit
-              (.getDomainAxis plot)
-              (org.jfree.chart.axis.NumberTickUnit. 10.0))
-            (.setTickUnit
-              (.getRangeAxis plot) 
-              (org.jfree.chart.axis.NumberTickUnit. 1.0))
+  (icharts/add-lines accelPlot    :times :yAccelCorrected
+                                  :data plotData
+                                  :series-label "y")
 
-            (def accelPlot (ChartPanel. accel))
-            (def gyroPlot (ChartPanel. gyro))
-            (def speedPlot (ChartPanel. speed))
+  (def gyroPlot (icharts/xy-plot  :x-label "Time (s)"
+                                  :y-label "Roll (Degrees)"
+                                  :title "Active Antiroll Roll"
+                                  :legend true
+                                  :times :zGyro
+                                  :data plotData
+                                  :series-label "z"))
 
-            (addTab tabbedGraphs {:title "Acceleration" :content accelPlot})
-            (addTab tabbedGraphs {:title "Gyro" :content gyroPlot})
-            (addTab tabbedGraphs {:title "Wheel Speed" :content speedPlot})
+  (def speedPlot (icharts/xy-plot :x-label "Time (s)"
+                                  :y-label "Speed (rad/sec)"
+                                  :title "Active Antiroll Wheel Speeds"
+                                  :legend true
+                                  :times :frontLeftSpeedCorrected
+                                  :data plotData
+                                  :series-label "Front Left"))
 
-            tabbedGraphs)))
+  (icharts/add-lines speedPlot    :times :frontRightSpeedCorrected
+                                  :data plotData
+                                  :series-label "Front Right")
+  (icharts/add-lines speedPlot    :times :rearLeftSpeedCorrected
+                                  :data plotData
+                                  :series-label "Rear Left")
+  (icharts/add-lines speedPlot    :times :rearRightSpeedCorrected
+                                  :data plotData
+                                  :series-label "Rear Right")
+
+  ;(let [plot (.getPlot accelPlot)]
+    ;(fn []
+      ;(.setTickUnit
+        ;(.getDomainAxis plot)
+        ;(org.jfree.chart.axis.NumberTickUnit. 10.0))
+      ;(.setTickUnit
+        ;(.getRangeAxis plot)
+        ;(org.jfree.chart.axis.NumberTickUnit. 1.0))))
+
+  (let [accelPlotPanel (ChartPanel. accelPlot)
+        gyroPlotPanel (ChartPanel. gyroPlot)
+        speedPlotPanel (ChartPanel. speedPlot)]
+    (fn [x] 
+      (addTab tabbedGraphsPanel {:title "Acceleration"
+                                 :content accelPlotPanel})
+      (addTab tabbedGraphsPanel {:title "Gyro"
+                                 :content gyroPlotPanel})
+      (addTab tabbedGraphsPanel {:title "Wheel Speed"
+                                 :content speedPlotPanel})))
+
+  tabbedGraphsPanel)
 
 
 ;Dialogs
 (defn openLogDialog[]
   (let [logFile (schooser/choose-file :type :open
-                                      :selection-mode :files-only
-                                      :filters [["CSV" ["csv"]]]
-                                      :success-fn (fn [fc file]
-                                                    (.getAbsolutePath file)))]
-  (processData (readCSV logFile))))
+                                     :selection-mode :files-only
+                                     :filters [["CSV" ["csv"]]]
+                                     :success-fn (fn [fc file]
+                                                   (.getAbsolutePath file)))]
+    (readCSV logFile)))
 
 
 ;Components...
 (def logButton (score/button :text "Choose log file"))
 
-(def introArea (score/flow-panel
-                   :align :center
-                   :hgap 20
-                   :items [logButton]))
+(def introArea (score/flow-panel :align :center
+                                 :hgap 20
+                                 :items [logButton]))
+
+(def sidebarArea (score/flow-panel :align :left
+                                   :hgap 20
+                                   :items [logButton]))
 
 
 ;Containers...
 (defn graphSidebarSplit[]
-  (let [plotArea (makePlotPanel (openLogDialog))
-        sidebarArea (score/flow-panel
-                      :align :left
-                      :hgap 20
-                      :items [logButton])
+  (def plotArea (makePlotPanel (processData (openLogDialog))))
 
-        split (score/left-right-split 
-                (score/scrollable sidebarArea)
-                (score/scrollable plotArea)
-                :divider-location 2/5)]
-    split))
+  (def split (score/left-right-split
+               (score/scrollable sidebarArea)
+               (score/scrollable plotArea)
+               :divider-location 3/10))
+  split)
 
 
 ;Menu items...
@@ -119,27 +125,25 @@
                             :mnemonic \o :key (skeystroke/keystroke "O")))
 
 (def exitItem (score/action :name "Exit" :tip "Exit the application"
-                      :mnemonic \q :key (skeystroke/keystroke "menu Q")
-                      :handler exit))
+                            :mnemonic \q :key (skeystroke/keystroke "menu Q")
+                            :handler exit))
 
 (def fileMenu (score/menu :text "File"
-                    :mnemonic \f
-                    :items [openItem exitItem]))
+                          :mnemonic \f
+                          :items [openItem exitItem]))
 ;Menubar
 (def menuBar (score/menubar :items [fileMenu]))
 
 
 ;Main frame which is used for the application
 (def mainFrame
-  (score/frame 
-    :title "Active Antiroll Utils"))
+  (score/frame :title "Active Antiroll Utils"))
 
 
+;GUI Init code
 (defn guiInit[]
   ;GUI Initialization stuff, make it work on all platforms and look nice
   (score/native!)
-
-;  (javax.swing.UIManager/setLookAndFeel "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
 
   ;component actions
   (defn loadPanelAction[e]
@@ -153,5 +157,10 @@
   (score/config! mainFrame :menubar menuBar)
 
   (display mainFrame introArea)
+
+  ;set the style of the gui to something a little better than default java
+  ;swing uglyness
+  (javax.swing.UIManager/setLookAndFeel
+    "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
 
   (-> mainFrame score/pack! score/show!))
