@@ -49,24 +49,32 @@
                         :rearLeftSpeedCorrected]))
 
 (defn processData[dataset]
-  (def newTime (icore/to-dataset (icore/$map (fn [x] (/ x 1000)) :timems dataset)))
-  (def newXAccel (icore/to-dataset (icore/$map (fn [x] (/ x 4096)) :xAccel dataset)))
-  (def newYAccel (icore/to-dataset (icore/$map (fn [x] (/ x 4096)) :yAccel dataset)))
-  (def newZAccel (if full (icore/to-dataset (icore/$map (fn [x] (/ x 4096)) :zAccel dataset))))
-  (def newFrontRS (icore/to-dataset (icore/$map (fn [x] (/ x 1)) :frontRightSpeed dataset)))
-  (def newFrontLS (icore/to-dataset (icore/$map (fn [x] (/ x 1)) :frontLeftSpeed dataset)))
-  (def newRearRS (icore/to-dataset (icore/$map (fn [x] (/ x 1)) :rearRightSpeed dataset)))
-  (def newRearLS (icore/to-dataset (icore/$map (fn [x] (/ x 1)) :rearLeftSpeed dataset)))
-    (def data (icore/conj-cols dataset
+  (let [newTime (icore/$map (fn [x] (/ x 1000)) :timems dataset)
+        newXAccel (icore/$map (fn [x] (/ x 4096)) :xAccel dataset)
+        newYAccel (icore/$map (fn [x] (/ x 4096)) :yAccel dataset)
+        newZAccel (if full (icore/$map (fn [x] (/ x 4096)) :zAccel dataset))
+        newFrontRS (icore/$map (fn [x] (/ x 1)) :frontRightSpeed dataset)
+        newFrontLS (icore/$map (fn [x] (/ x 1)) :frontLeftSpeed dataset)
+        newRearRS (icore/$map (fn [x] (/ x 1)) :rearRightSpeed dataset)
+        newRearLS (icore/$map (fn [x] (/ x 1)) :rearLeftSpeed dataset)]
+    (if full
+      (def data (icore/conj-cols dataset
                                newTime
                                newXAccel
                                newYAccel
-                               (if full newZAccel)
+                               newZAccel
                                newFrontRS
                                newFrontLS
                                newRearRS
                                newRearLS))
+      (def data (icore/conj-cols dataset
+                               newTime
+                               newXAccel
+                               newYAccel
+                               newFrontRS
+                               newFrontLS
+                               newRearRS
+                               newRearLS))))
 
-  (println data)
   (def newData (icore/col-names data names))
   newData)

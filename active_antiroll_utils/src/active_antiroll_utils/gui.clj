@@ -25,23 +25,21 @@
 (defn makePlotPanel[plotData]
   (def tabbedGraphsPanel (score/tabbed-panel :placement :top
                                              :overflow :wrap))
-  (println plotData)
-
   (def accelPlot (icharts/xy-plot :title "Active Antiroll Acceleration"
                                   :y-label "Acceleration (g)"
                                   :x-label "Time (s)"
                                   :legend true
-                                  :timems :xAccel
+                                  :times :xAccelCorrected
                                   :data plotData
                                   :series-label "x"))
 
-  ;(icharts/add-lines accelPlot    :times :yAccelCorrected
-                                  ;:data plotData
-                                  ;:series-label "y")
+  (icharts/add-lines accelPlot    :times :yAccelCorrected
+                                  :data plotData
+                                  :series-label "y")
 
-  ;(if full (icharts/add-lines accelPlot :times :zAccelCorrected
-                                  ;:data plotData
-                                  ;:series-label "z"))
+  (if full (icharts/add-lines accelPlot :times :zAccelCorrected
+                                  :data plotData
+                                  :series-label "z"))
 
   (def gyroPlot (icharts/xy-plot  :title "Active Antiroll Roll"
                                   :y-label "Roll (Degrees)"
@@ -93,14 +91,14 @@
                                   :series-label "Rear")
 
 
-  (let [plot (.getPlot accelPlot)]
-    (fn []
-      (.setTickUnit
-        (.getDomainAxis plot)
-        (org.jfree.chart.axis.NumberTickUnit. 10.0))
-      (.setTickUnit
-        (.getRangeAxis plot)
-        (org.jfree.chart.axis.NumberTickUnit. 1.0))))
+  ;(let [plot (.getPlot accelPlot)]
+    ;(fn []
+      ;(.setTickUnit
+        ;(.getDomainAxis plot)
+        ;(org.jfree.chart.axis.NumberTickUnit. 10.0))
+      ;(.setTickUnit
+        ;(.getRangeAxis plot)
+        ;(org.jfree.chart.axis.NumberTickUnit. 1.0))))
 
   (addTab tabbedGraphsPanel {:title "Acceleration"
                              :content (ChartPanel. accelPlot)})
@@ -174,8 +172,8 @@
 
   ;set the style of the gui to something a little better than default java
   ;swing uglyness
-  ;(javax.swing.UIManager/setLookAndFeel
-    ;"org.pushingpixels.substance.api.skin.SubstanceGraphiteLookAndFeel")
+  (javax.swing.UIManager/setLookAndFeel
+    "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
 
   ;component actions
   (defn loadPanelAction[e]
