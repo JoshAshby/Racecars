@@ -1,6 +1,7 @@
 #ifndef CARD_H
 #define CARD_H
 #include "Arduino.h"
+#include "typedefs.h"
 /*
 Joshua Ashby 2013
 joshuaashby@joshashby.com
@@ -22,7 +23,7 @@ Uses SdFat
  */
 
 #define full false
-#define debug false
+#define debug true
 
 class Log {
   private:
@@ -42,14 +43,11 @@ class Log {
     void error(String message);
     void log(String message);
     #if full
-      void log(String message, int *aAndGBuffer);
-      void log(String message, int *aAndGBuffer, float *wSpeedsBuffer);
-      void log(String message, int *aAndGBuffer, float *wSpeedsBuffer, int *pulseBuffer);
+      void log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos);
     #else
-      void log(int *aAndGBuffer);
-      void log(int *aAndGBuffer, float *wSpeedsBuffer);
-      void log(int *aAndGBuffer, float *wSpeedsBuffer, int *pulseBuffer);
+      void log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos);
     #endif
+      
 };
 
 #endif

@@ -7,122 +7,10 @@
 //
 #include <Wire.h>
 #include <SdFat.h>
-#include <Servo.h> 
+#include <Servo.h>
+#include "globals.h"
 #include "card.h"
 #include "ganda.h"
-
-// Declaring an union for the registers and the axis values.
-// The byte order does not match the byte order of 
-// the compiler and AVR chip.
-// The AVR chip (on the Arduino board) has the Low Byte 
-// at the lower address.
-// But the MPU-6050 has a different order: High Byte at
-// lower address, so that has to be corrected.
-// The register part "reg" is only used internally, 
-// and are swapped in code.
-typedef union accel_t_gyro_union
-{
-  struct
-  {
-    uint8_t x_accel_h;
-    uint8_t x_accel_l;
-    uint8_t y_accel_h;
-    uint8_t y_accel_l;
-    uint8_t z_accel_h;
-    uint8_t z_accel_l;
-    uint8_t t_h;
-    uint8_t t_l;
-    uint8_t x_gyro_h;
-    uint8_t x_gyro_l;
-    uint8_t y_gyro_h;
-    uint8_t y_gyro_l;
-    uint8_t z_gyro_h;
-    uint8_t z_gyro_l;
-  } reg;
-  struct 
-  {
-    int x_accel;
-    int y_accel;
-    int z_accel;
-    int temperature;
-    int x_gyro;
-    int y_gyro;
-    int z_gyro;
-  } value;
-};
-
-typedef union wheelSpeeds_struct
-{
-  struct
-  {
-    float frontRight;
-    float frontLeft;
-    float rearRight;
-    float rearLeft;
-  } speeds;
-};
-
-typedef union pulse_struct
-{
-  struct
-  {
-    int frontRight;
-    int frontLeft;
-    int rear;
-  } pulses;
-};
-
-int wheel = 0;
-int selector = A0;
-int steering = A1;
-int speedsensorfl = A2;
-int speedsensorfr = A3;
-int speedsensorrl = 5;
-int speedsensorrr = 6;
-int recswitch = 3;
-int recled = 4;
-
-int bonnieandclyde = 7;
-int mustang = 9;
-int sally = 10;
-Servo frontLeftServo;
-Servo frontRightServo;
-Servo rearServo;
-
-int rearslide;
-int wheelspeedfl;
-int wheelspeedfr;
-int wheelspeedrl;
-int wheelspeedrr;
-
-int pulsewidthfl;
-int pulsewidthfr;
-int pulsewidthrl;
-int pulsewidthrr;
-
-float ax = 0;
-float ay = 0;
-float gz = 0;
-
-int setting;
-boolean recording;
-float steeringangle;
-unsigned long time;
-
-int error;
-uint8_t c;
-
-double dT;
-accel_t_gyro_union accel_t_gyro;
-wheelSpeeds_struct wheelSpeeds;
-pulse_struct servos;
-
-const int chipSelect = 8;
-
-uint8_t swap;
-#define SWAP(x,y) swap = x; x = y; y = swap
-  
-Log Logger;
 
 void setup() {
   Logger.begin();
@@ -164,9 +52,15 @@ void setup() {
   frontRightServo.attach(sally);
   frontLeftServo.attach(mustang);
   rearServo.attach(bonnieandclyde);
+  
+  wheelSpeeds.rearRight = 0;
+  wheelSpeeds.rearLeft = 0;
+  wheelSpeeds.frontRight = 0;
+  wheelSpeeds.frontLeft = 0;
 }
 
 void loop() {
+//  Serial.println(accel_t_gyro.value.x_accel);
   if(digitalRead(recswitch)==LOW) {
     if(recording == true) {
       recording = false;
@@ -204,39 +98,39 @@ void loop() {
   if (wheelspeedfl >= 20) {
     pulsewidthfl = pulseIn(speedsensorfl, HIGH, 13900);
     if (pulsewidthfl == 0) {
-      wheelSpeeds.speeds.frontLeft = 0;
+      wheelSpeeds.frontLeft = 0;
     } else {
-      wheelSpeeds.speeds.frontLeft = 116025 / pulsewidthfl;
+      wheelSpeeds.frontLeft = 116025 / pulsewidthfl;
     }
     
     pulsewidthfr = pulseIn(speedsensorfr, HIGH, 13900);
     if (pulsewidthfr == 0) {
-      wheelSpeeds.speeds.frontRight = 0;
+      wheelSpeeds.frontRight = 0;
     } else {
-      wheelSpeeds.speeds.frontRight = 116025 / pulsewidthfr;
+      wheelSpeeds.frontRight = 116025 / pulsewidthfr;
     }
   
     pulsewidthrl = pulseIn(speedsensorrl, HIGH, 13900);
     if (pulsewidthrl == 0) {
-      wheelSpeeds.speeds.rearLeft = 0;
+      wheelSpeeds.rearLeft = 0;
     } else {
-      wheelSpeeds.speeds.rearLeft = 116025 / pulsewidthrl;
+      wheelSpeeds.rearLeft = 116025 / pulsewidthrl;
     }
     
     pulsewidthrr = pulseIn(speedsensorrr, HIGH, 13900);
     if (pulsewidthrr == 0) {
-      wheelSpeeds.speeds.rearRight = 0;
+      wheelSpeeds.rearRight = 0;
     } else {
-      wheelSpeeds.speeds.rearRight = 116025 / pulsewidthrr;
+      wheelSpeeds.rearRight = 116025 / pulsewidthrr;
     } 
   } else {
     switch(wheel) {
       case 0:
         pulsewidthfl = pulseIn(speedsensorfl, HIGH, 13900);
         if (pulsewidthfl == 0) {
-          wheelSpeeds.speeds.frontLeft = 0;
+          wheelSpeeds.frontLeft = 0;
         } else {
-          wheelSpeeds.speeds.frontLeft = 116025 / pulsewidthfl;
+          wheelSpeeds.frontLeft = 116025 / pulsewidthfl;
         }
         wheel = 1;
         break;
@@ -244,9 +138,9 @@ void loop() {
       case 1:
         pulsewidthfr = pulseIn(speedsensorfr, HIGH, 13900);
         if (pulsewidthfr == 0) {
-          wheelSpeeds.speeds.frontRight = 0;
+          wheelSpeeds.frontRight = 0;
         } else {
-          wheelSpeeds.speeds.frontRight = 116025 / pulsewidthfr;
+          wheelSpeeds.frontRight = 116025 / pulsewidthfr;
         }
         wheel = 2;
         break;
@@ -254,9 +148,9 @@ void loop() {
       case 2:
         pulsewidthrl = pulseIn(speedsensorrl, HIGH, 13900);
         if (pulsewidthrl == 0) {
-          wheelSpeeds.speeds.rearLeft = 0;
+          wheelSpeeds.rearLeft = 0;
         } else {
-          wheelSpeeds.speeds.rearLeft = 116025 / pulsewidthrl;
+          wheelSpeeds.rearLeft = 116025 / pulsewidthrl;
         }
         wheel = 3;
         break;
@@ -264,9 +158,9 @@ void loop() {
       case 3:
         pulsewidthrr = pulseIn(speedsensorrr, HIGH, 13900);
         if (pulsewidthrr == 0) {
-          wheelSpeeds.speeds.rearRight = 0;
+          wheelSpeeds.rearRight = 0;
         } else {
-          wheelSpeeds.speeds.rearRight = 116025 / pulsewidthrr;
+          wheelSpeeds.rearRight = 116025 / pulsewidthrr;
         }
         wheel = 0;
         break;
@@ -279,151 +173,191 @@ void loop() {
   //read setting
   setting = analogRead(selector)/33.81;
 
-/*
   switch(setting) {
     case 0:
-      Serial.print("37.0%");
-        bandcpulse = 975;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
     
     case 1:
-      Serial.print("37.0%");
-        bandcpulse = 975;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 2:
-      Serial.print("39.4%");
-        bandcpulse = 986;
-        sallypulse = 1409;
-        mustangpulse = 1359;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
     
     case 3:
-      Serial.print("40.2%");
-        bandcpulse = 1028;
-        sallypulse = 1354;
-        mustangpulse = 1324;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 4:
-      Serial.print("41.0%");
-        bandcpulse = 1291;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 5:
-      Serial.print("41.8%");
-        bandcpulse = 1362;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 6:
-      Serial.print("42.6%");
-        bandcpulse = 1598;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
     
     case 7:
-      Serial.print("43.4%");
-        bandcpulse = 1900;
-        sallypulse = 2000;
-        mustangpulse = 1950;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 8:
-      Serial.print("44.2%");
-        bandcpulse = 1900;
-        sallypulse = 1637;
-        mustangpulse = 1587;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 9:
-      Serial.print("45.0%");
-        bandcpulse = 1900;
-        sallypulse = 1520;
-        mustangpulse = 1470;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 10:
-      Serial.print("45.8%");
-        bandcpulse = 1900;
-        sallypulse = 1446;
-        mustangpulse = 1396;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 11:
-      Serial.print("46.6%");
-        bandcpulse = 1900;
-        sallypulse = 1358;
-        mustangpulse = 1338;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
     
     case 12:
-      Serial.print("47.4%");
-        bandcpulse = 1900;
-        sallypulse = 1342;
-        mustangpulse = 1292;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break; 
     
     case 13:
-      Serial.print("48.2%");
-        bandcpulse = 1900;
-        sallypulse = 1303;
-        mustangpulse = 1253;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 14:
-      Serial.print("49.0%");
-        bandcpulse = 1238;
-        sallypulse = 1134;
-        mustangpulse = 1084;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 15:
-      Serial.print("49.8%");
-        bandcpulse = 1270;
-        sallypulse = 1113;
-        mustangpulse = 1063;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 16:
-      Serial.print("50.6%");
-        bandcpulse = 1327;
-        sallypulse = 1103;
-        mustangpulse = 1053;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 17:
-      Serial.print("51.4%");
-        bandcpulse = 1520;
-        sallypulse = 1103;
-        mustangpulse = 1053;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 18:
-      Serial.print("52.2%");
-        bandcpulse = 1592;
-        sallypulse = 1103;
-        mustangpulse = 1053;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
       
     case 19:
-      Serial.print("53.0%");
-        bandcpulse = 1900;
-        sallypulse = 1050;
-        mustangpulse = 1000;
+      servos.rear = 50;
+      servos.frontRight = 50;
+      servos.frontLeft = 50;
+      #if full
+        percent = "37.0%"
+      #endif
       break;
-      
+
     case 20:
-      Serial.print("Active");
-      
+      break;
+//      Serial.print("Active");
+/*      
       //default setting for low lateral acceleration
       if (accel_t_gyro.value.y_accel < 4095) {
         if (bandcpulse != bandcdefault) {
@@ -496,9 +430,13 @@ void loop() {
             }
           }
         }
-      }
+      } */
   }
-  */
-  servoWrite((int *)&servos);
-  Logger.log((int *)&accel_t_gyro, (float *)&wheelSpeeds, (int *)&servos);
+
+  servoWrite(servos);
+  #if full
+    Logger.log(percent, accel_t_gyro, wheelSpeeds, servos);
+  #else
+    Logger.log(accel_t_gyro, wheelSpeeds, servos);
+  #endif
 }

@@ -31,7 +31,9 @@ int MPU6050_read(int start, uint8_t *buffer, int size)
   i = 0;
   while(Wire.available() && i<size)
   {
-    buffer[i++]=Wire.read();
+    uint8_t value = Wire.read();
+//    buffer[i++]=Wire.read();
+    buffer[i++]=value;
   }
   if ( i != size)
     return (-11);

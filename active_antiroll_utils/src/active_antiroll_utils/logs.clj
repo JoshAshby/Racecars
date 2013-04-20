@@ -8,6 +8,7 @@
 (defn readCSV[datafileName]
   (iio/read-dataset datafileName :header true))
 
+;There has got to a better way of doing this...
 (def names (if full [:timems
                         :xAccel
                         :yAccel
@@ -57,6 +58,7 @@
         newFrontLS (icore/$map (fn [x] (/ x 1)) :frontLeftSpeed dataset)
         newRearRS (icore/$map (fn [x] (/ x 1)) :rearRightSpeed dataset)
         newRearLS (icore/$map (fn [x] (/ x 1)) :rearLeftSpeed dataset)]
+    ;Theres got to be a better way for this too.
     (if full
       (def data (icore/conj-cols dataset
                                newTime
@@ -76,5 +78,4 @@
                                newRearRS
                                newRearLS))))
 
-  (def newData (icore/col-names data names))
-  newData)
+  (icore/col-names data names))

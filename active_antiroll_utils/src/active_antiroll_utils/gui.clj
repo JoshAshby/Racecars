@@ -6,8 +6,15 @@
             [seesaw.chooser :as schooser]
             [incanter.core :as icore]
             [incanter.charts :as icharts])
-  (:import [org.jfree.chart ChartPanel]
-           org.pushingpixels.substance.api.SubstanceLookAndFeel))
+  (:import [org.jfree.chart ChartPanel StandardChartTheme]
+           org.pushingpixels.substance.api.SubstanceLookAndFeel
+           [java.awt Color]))
+
+
+;Make everything pretty
+(score/native!)
+(javax.swing.UIManager/setLookAndFeel
+  "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
 
 
 ;Util functions
@@ -25,6 +32,7 @@
 (defn makePlotPanel[plotData]
   (def tabbedGraphsPanel (score/tabbed-panel :placement :top
                                              :overflow :wrap))
+
   (def accelPlot (icharts/xy-plot :title "Active Antiroll Acceleration"
                                   :y-label "Acceleration (g)"
                                   :x-label "Time (s)"
@@ -100,6 +108,16 @@
         ;(.getRangeAxis plot)
         ;(org.jfree.chart.axis.NumberTickUnit. 1.0))))
 
+  (def custom-dark-theme
+    (doto
+      (StandardChartTheme/createJFreeTheme)
+      (.setPlotDackgroundPaint Color/DARK_GREY)))
+
+  (icharts/set-theme accelPlot custom-dark-theme)
+  (icharts/set-theme gyroPlot custom-dark-theme)
+  (icharts/set-theme speedPlot custom-dark-theme)
+  (icharts/set-theme servoPlot custom-dark-theme)
+
   (addTab tabbedGraphsPanel {:title "Acceleration"
                              :content (ChartPanel. accelPlot)})
   (addTab tabbedGraphsPanel {:title "Gyro"
@@ -161,20 +179,11 @@
 
 
 ;Main frame which is used for the application
-(def mainFrame
-  (score/frame :title "Active Antiroll Utils"))
+(def mainFrame (score/frame :title "Active Antiroll Utils"))
 
 
 ;GUI Init code
 (defn guiInit[]
-  ;GUI Initialization stuff, make it work on all platforms and look nice
-  (score/native!)
-
-  ;set the style of the gui to something a little better than default java
-  ;swing uglyness
-  (javax.swing.UIManager/setLookAndFeel
-    "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel")
-
   ;component actions
   (defn loadPanelAction[e]
     (display mainFrame (graphSidebarSplit)))

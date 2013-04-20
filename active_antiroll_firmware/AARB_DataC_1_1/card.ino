@@ -88,162 +88,111 @@ void Log::log(String message) {
 }
 
 #if full
-  void Log::log(String message, int *aAndGBuffer) {
-    logAccel((int *)&aAndGBuffer);
-    logFile.println(message);
-
-    #if debug
-      Serial.println(message);
-    #endif
-  }
-
-  void Log::log(String message, int *aAndGBuffer, float *wSpeedBuffer) {
+  void Log::log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos) {
     beginLog();
-    logAccel((int *)&aAndGBuffer);
-    logSpeed((float *)&wSpeedBuffer);
-    logFile.println(message);
-
+    logFile.print(aAndG.value.x_accel, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.y_accel, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.z_accel, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.x_gyro, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.y_gyro, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.z_gyro, DEC);
+    logFile.print(",");
+    logFile.print(speeds.frontRight, DEC);
+    logFile.print(",");
+    logFile.print(speeds.frontLeft, DEC);
+    logFile.print(",");
+    logFile.print(speeds.rearRight, DEC);
+    logFile.print(",");
+    logFile.print(speeds.rearLeft, DEC);
+    logFile.print(",");
+    logFile.print(servos.frontRight, DEC);
+    logFile.print(",");
+    logFile.print(servos.frontLeft, DEC);
+    logFile.print(",");
+    logFile.print(servos.rear, DEC);
+    logFile.print(",");
+    logFile.print(message, DEC);
+    logFile.println();
     #if debug
-      Serial.println(message);
-    #endif
-  }
-
-  void Log::log(String message, int *aAndGBuffer, float *wSpeedBuffer, int *pulseBuffer) {
-    beginLog();
-    logAccel((int *)&aAndGBuffer);
-    logSpeed((float *)&wSpeedBuffer);
-    logPulse((int *)&pulseBuffer);
-    logFile.println(message);
-
-    #if debug
-      Serial.println(message);
+      Serial.print(aAndG.value.x_accel, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.y_accel, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.z_accel, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.x_gyro, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.y_gyro, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.z_gyro, DEC);
+      Serial.print(",");
+      Serial.print(speeds.frontRight, DEC);
+      Serial.print(",");
+      Serial.print(speeds.frontLeft, DEC);
+      Serial.print(",");
+      Serial.print(speeds.rearRight, DEC);
+      Serial.print(",");
+      Serial.print(speeds.rearLeft, DEC);
+      Serial.print(",");
+      Serial.print(servos.frontRight, DEC);
+      Serial.print(",");
+      Serial.print(servos.frontLeft, DEC);
+      Serial.print(",");
+      Serial.print(servos.rear, DEC);
+      Serial.print(",");
+      Serial.print(message);
+      Serial.println();
     #endif
   }
 #else
-  void Log::log(int *aAndGBuffer) {
-    logAccel((int *)&aAndGBuffer);
-    logFile.println();
-
-    #if debug
-      Serial.println();
-    #endif
-  }
-
-  void Log::log(int *aAndGBuffer, float *wSpeedBuffer) {
+  void Log::log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos) {
     beginLog();
-    logAccel((int *)&aAndGBuffer);
-    logSpeed((float *)&wSpeedBuffer);
+    logFile.print(aAndG.value.x_accel, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.y_accel, DEC);
+    logFile.print(",");
+    logFile.print(aAndG.value.z_gyro, DEC);
+    logFile.print(",");
+    logFile.print(speeds.frontRight, DEC);
+    logFile.print(",");
+    logFile.print(speeds.frontLeft, DEC);
+    logFile.print(",");
+    logFile.print(speeds.rearRight, DEC);
+    logFile.print(",");
+    logFile.print(speeds.rearLeft, DEC);
+    logFile.print(",");
+    logFile.print(servos.frontRight, DEC);
+    logFile.print(",");
+    logFile.print(servos.frontLeft, DEC);
+    logFile.print(",");
+    logFile.print(servos.rear, DEC);
     logFile.println();
-
     #if debug
-      Serial.println();
-    #endif
-  }
-
-  void Log::log(int *aAndGBuffer, float *wSpeedBuffer, int *pulseBuffer) {
-    beginLog();
-    logAccel((int *)&aAndGBuffer);
-    logSpeed((float *)&wSpeedBuffer);
-    logPulse((int *)&pulseBuffer);
-    logFile.println();
-
-    #if debug
+      Serial.print(aAndG.value.x_accel, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.y_accel, DEC);
+      Serial.print(",");
+      Serial.print(aAndG.value.z_gyro, DEC);
+      Serial.print(",");
+      Serial.print(speeds.frontRight, DEC);
+      Serial.print(",");
+      Serial.print(speeds.frontLeft, DEC);
+      Serial.print(",");
+      Serial.print(speeds.rearRight, DEC);
+      Serial.print(",");
+      Serial.print(speeds.rearLeft, DEC);
+      Serial.print(",");
+      Serial.print(servos.frontRight, DEC);
+      Serial.print(",");
+      Serial.print(servos.frontLeft, DEC);
+      Serial.print(",");
+      Serial.print(servos.rear, DEC);
       Serial.println();
     #endif
   }
 #endif
-
-void Log::logAccel(int *aAndGBuffer) {
-  #if full
-    int i = 0;
-    while(i <= 6) {
-      logFile.print(aAndGBugger[i++], DEC);
-      logFile.print(",");
-      #if debug
-        Serial.print(aAndGBuffer[i++]);
-        Serial.print(",");
-      #endif
-    }
-  #else
-    logFile.print(aAndGBuffer[0]);
-    logFile.print(",");
-    logFile.print(aAndGBuffer[1]);
-    logFile.print(",");
-    logFile.print(aAndGBuffer[6]);
-    logFile.print(",");
-
-    #if debug
-      Serial.print(aAndGBuffer[0]);
-      Serial.print(",");
-      Serial.print(aAndGBuffer[1]);
-      Serial.print(",");
-      Serial.print(aAndGBuffer[6]);
-      Serial.print(",");
-    #endif
-  #endif
-
-}
-
-void Log::logSpeed(float *wSpeedBuffer) {
-  #if full
-    int i = 0;
-    while(i <= 3) {
-      logFile.print(wSpeedBuffer[i++], DEC);
-      logFile.print(",");
-      #if debug
-        Serial.print(wSpeedBuffer[i++]);
-        Serial.print(",");
-      #endif
-    }
-  #else
-    logFile.print(wSpeedBuffer[0]);
-    logFile.print(",");
-    logFile.print(wSpeedBuffer[1]);
-    logFile.print(",");
-    logFile.print(wSpeedBuffer[2]);
-    logFile.print(",");
-    logFile.print(wSpeedBuffer[3]);
-    logFile.print(",");
-
-    #if debug
-      Serial.print(wSpeedBuffer[0]);
-      Serial.print(",");
-      Serial.print(wSpeedBuffer[1]);
-      Serial.print(",");
-      Serial.print(wSpeedBuffer[2]);
-      Serial.print(",");
-      Serial.print(wSpeedBuffer[3]);
-      Serial.print(",");
-    #endif
-  #endif
-}
-
-void Log::logPulse(int *pulseBuffer) {
-  #if full
-    int i = 0;
-    while(i <= 2) {
-      logFile.print(pulseBuffer[i++], DEC);
-      logFile.print(",");
-      #if debug
-        Serial.print(pulseBuffer[i++]);
-        Serial.print(",");
-      #endif
-    }
-  #else
-    logFile.print(pulseBuffer[0]);
-    logFile.print(",");
-    logFile.print(pulseBuffer[1]);
-    logFile.print(",");
-    logFile.print(pulseBuffer[2]);
-    logFile.print(",");
-
-    #if debug
-      Serial.print(pulseBuffer[0]);
-      Serial.print(",");
-      Serial.print(pulseBuffer[1]);
-      Serial.print(",");
-      Serial.print(pulseBuffer[2]);
-      Serial.print(",");
-    #endif
-  #endif
-}
