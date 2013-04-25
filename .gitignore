@@ -14,21 +14,9 @@
 .sw[nop]
 *.tmp
 *.scratchpad
-.flagSearchIndex/
 virt/
 *.out
-node_modules
-interface/resources/css/bootstrap/
-interface/resources/css/fontawesome/
-interface/resources/js/bootstrap/
-interface/compiled_templates/
-flagr_core/logs/
-flagr_core/pid/
-flagr_core/views/
-flagr_core/.coverage
-siteConfig.json
-.pylintrc
-*.flagr.js
+*.zip
 
 # Compiled source #
 ###################

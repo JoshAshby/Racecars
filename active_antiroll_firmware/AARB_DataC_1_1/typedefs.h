@@ -1,7 +1,7 @@
-typedef union
-{
-  struct
-  {
+#ifndef TYPEDEFS_H
+#define TYPEDEFS_H
+typedef union {
+  struct {
     uint8_t x_accel_h;
     uint8_t x_accel_l;
     uint8_t y_accel_h;
@@ -17,8 +17,7 @@ typedef union
     uint8_t z_gyro_h;
     uint8_t z_gyro_l;
   } reg;
-  struct 
-  {
+  struct {
     int x_accel;
     int y_accel;
     int z_accel;
@@ -29,17 +28,19 @@ typedef union
   } value;
 } accel_t_gyro_union;
 
-typedef struct
-  {
-    float frontRight;
-    float frontLeft;
-    float rearRight;
-    float rearLeft;
-  } speeds_struct;
+typedef struct {
+  float frontRight;
+  float frontLeft;
+  float rearRight;
+  float rearLeft;
+} speeds_struct;
 
-typedef struct
-  {
-    int frontRight;
-    int frontLeft;
-    int rear;
-  } servos_struct;
+typedef struct {
+  int frontRight;
+  int frontLeft;
+  int rear;
+  int oldFrontRight;
+  int oldFrontLeft;
+  int oldRear;
+} servos_struct;
+  #endif

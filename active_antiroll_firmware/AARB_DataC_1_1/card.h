@@ -22,9 +22,6 @@ Uses SdFat
  modified by Bill Greiman 11 Apr 2011
  */
 
-#define full false
-#define debug true
-
 class Log {
   private:
     SdFat sd;
@@ -42,10 +39,12 @@ class Log {
     void close(void);
     void error(String message);
     void log(String message);
-    #if full
-      void log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos);
-    #else
-      void log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos);
+    #if active
+      #if full
+        void log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos, float reading);
+      #else
+        void log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos, float reading);
+      #endif
     #endif
       
 };

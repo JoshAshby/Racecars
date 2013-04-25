@@ -48,9 +48,9 @@ void Log::open() {
       Serial.println("Logging to log.csv...");
     #endif
     #if full
-      logFile.println("timems,xAccel,yAccel,zAccel,temp,xGyro,yGyro,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo,message");
+      logFile.println("timems,xAccel,yAccel,zAccel,temp,xGyro,yGyro,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo,setting,message");
     #else
-      logFile.println("timems,xAccel,yAccel,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo");
+      logFile.println("timems,xAccel,yAccel,zGyro,frontRightSpeed,frontLeftSpeed,rearRightSpeed,rearLeftSpeed,frontRightServo,frontLeftServo,rearServo,setting");
     #endif
   }
 }
@@ -88,7 +88,7 @@ void Log::log(String message) {
 }
 
 #if full
-  void Log::log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos) {
+  void Log::log(String message, const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos, float setting) {
     beginLog();
     logFile.print(aAndG.value.x_accel, DEC);
     logFile.print(",");
@@ -116,7 +116,9 @@ void Log::log(String message) {
     logFile.print(",");
     logFile.print(servos.rear, DEC);
     logFile.print(",");
-    logFile.print(message, DEC);
+    logFile.print(setting, DEC);
+    logFile.print(",");
+    logFile.print(message);
     logFile.println();
     #if debug
       Serial.print(aAndG.value.x_accel, DEC);
@@ -145,54 +147,60 @@ void Log::log(String message) {
       Serial.print(",");
       Serial.print(servos.rear, DEC);
       Serial.print(",");
+      Serial.print(setting, DEC);
+      Serial.print(",");
       Serial.print(message);
       Serial.println();
     #endif
   }
-#else
-  void Log::log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos) {
-    beginLog();
-    logFile.print(aAndG.value.x_accel, DEC);
-    logFile.print(",");
-    logFile.print(aAndG.value.y_accel, DEC);
-    logFile.print(",");
-    logFile.print(aAndG.value.z_gyro, DEC);
-    logFile.print(",");
-    logFile.print(speeds.frontRight, DEC);
-    logFile.print(",");
-    logFile.print(speeds.frontLeft, DEC);
-    logFile.print(",");
-    logFile.print(speeds.rearRight, DEC);
-    logFile.print(",");
-    logFile.print(speeds.rearLeft, DEC);
-    logFile.print(",");
-    logFile.print(servos.frontRight, DEC);
-    logFile.print(",");
-    logFile.print(servos.frontLeft, DEC);
-    logFile.print(",");
-    logFile.print(servos.rear, DEC);
-    logFile.println();
-    #if debug
-      Serial.print(aAndG.value.x_accel, DEC);
-      Serial.print(",");
-      Serial.print(aAndG.value.y_accel, DEC);
-      Serial.print(",");
-      Serial.print(aAndG.value.z_gyro, DEC);
-      Serial.print(",");
-      Serial.print(speeds.frontRight, DEC);
-      Serial.print(",");
-      Serial.print(speeds.frontLeft, DEC);
-      Serial.print(",");
-      Serial.print(speeds.rearRight, DEC);
-      Serial.print(",");
-      Serial.print(speeds.rearLeft, DEC);
-      Serial.print(",");
-      Serial.print(servos.frontRight, DEC);
-      Serial.print(",");
-      Serial.print(servos.frontLeft, DEC);
-      Serial.print(",");
-      Serial.print(servos.rear, DEC);
-      Serial.println();
-    #endif
-  }
 #endif
+
+void Log::log(const accel_t_gyro_union& aAndG, const speeds_struct& speeds, const servos_struct&  servos, float setting) {
+  beginLog();
+  logFile.print(aAndG.value.x_accel, DEC);
+  logFile.print(",");
+  logFile.print(aAndG.value.y_accel, DEC);
+  logFile.print(",");
+  logFile.print(aAndG.value.z_gyro, DEC);
+  logFile.print(",");
+  logFile.print(speeds.frontRight, DEC);
+  logFile.print(",");
+  logFile.print(speeds.frontLeft, DEC);
+  logFile.print(",");
+  logFile.print(speeds.rearRight, DEC);
+  logFile.print(",");
+  logFile.print(speeds.rearLeft, DEC);
+  logFile.print(",");
+  logFile.print(servos.frontRight, DEC);
+  logFile.print(",");
+  logFile.print(servos.frontLeft, DEC);
+  logFile.print(",");
+  logFile.print(servos.rear, DEC);
+  logFile.print(",");
+  logFile.print(setting, DEC);
+  logFile.println();
+  #if debug
+    Serial.print(aAndG.value.x_accel, DEC);
+    Serial.print(",");
+    Serial.print(aAndG.value.y_accel, DEC);
+    Serial.print(",");
+    Serial.print(aAndG.value.z_gyro, DEC);
+    Serial.print(",");
+    Serial.print(speeds.frontRight, DEC);
+    Serial.print(",");
+    Serial.print(speeds.frontLeft, DEC);
+    Serial.print(",");
+    Serial.print(speeds.rearRight, DEC);
+    Serial.print(",");
+    Serial.print(speeds.rearLeft, DEC);
+    Serial.print(",");
+    Serial.print(servos.frontRight, DEC);
+    Serial.print(",");
+    Serial.print(servos.frontLeft, DEC);
+    Serial.print(",");
+    Serial.print(servos.rear, DEC);
+    Serial.print(",");
+    Serial.print(setting, DEC);
+    Serial.println();
+  #endif
+}

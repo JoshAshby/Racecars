@@ -15,11 +15,11 @@
 
 int wheel = 0;
 int selector = A0;
-int steering = A1;
 int speedsensorfl = A2;
 int speedsensorfr = A3;
 int speedsensorrl = 5;
-int speedsensorrr = 6;
+int speedsensorrr = A1;
+
 int recswitch = 3;
 int recled = 4;
 
@@ -46,6 +46,7 @@ float ay = 0;
 float gz = 0;
 
 int setting;
+float reading;
 boolean recording;
 float steeringangle;
 unsigned long time;
@@ -62,6 +63,12 @@ const int chipSelect = 8;
 
 uint8_t swap;
 #define SWAP(x,y) swap = x; x = y; y = swap
-  
-Log Logger;
+
+#if logging
+  Log Logger;
+#endif
+
+int wheelTimeout = 13900;
+int wheelDivisor = 34807;
+
 #endif
